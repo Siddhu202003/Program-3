@@ -5,8 +5,6 @@ import java.util.ArrayList;
 
 import simplf.Expr.Lambda;
 import simplf.Stmt.For;
-import simplf.parser.Token;
-import simplf.parser.TokenType;
 import simplf.Stmt.Function;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
@@ -135,6 +133,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
         // Define the function name in the current environment.
         environment.define(stmt.name, stmt.name.lexeme, function);
         return null;
+    }
+
+    @Override
+    public Object visitReturnStmt(Stmt.Return stmt) {
+        Object value = null;
+        if (stmt.value != null) {
+            value = evaluate(stmt.value);
+        }
+        throw new ReturnControlFlow(value);
     }
 
     @Override
