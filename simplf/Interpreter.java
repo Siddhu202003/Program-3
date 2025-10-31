@@ -138,15 +138,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
     }
 
     @Override
-    public Object visitReturnStmt(Stmt.Return stmt) {
-        Object value = null;
-        if (stmt.value != null) {
-            value = evaluate(stmt.value);
-        }
-        throw new ReturnControlFlow(value);
-    }
-
-    @Override
     public Object visitCallExpr(Expr.Call expr) {
         Object callee = evaluate(expr.callee);
         
