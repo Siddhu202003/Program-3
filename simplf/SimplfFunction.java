@@ -55,6 +55,10 @@ class SimplfFunction implements SimplfCallable {
                     interpreter.execute(stmt);
                 }
             }
+            
+            // Return the last expression's value, or null if no expression
+            return lastValue;
+            
         } catch (ReturnControlFlow returnValue) {
             // Catches the value thrown by a return statement.
             return returnValue.value;
@@ -62,9 +66,6 @@ class SimplfFunction implements SimplfCallable {
             // Always restore the environment
             interpreter.environment = previous;
         }
-        
-        // Return the last expression's value, or null if no expression
-        return lastValue;
     }
 
     @Override
