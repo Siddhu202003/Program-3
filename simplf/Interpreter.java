@@ -9,7 +9,7 @@ import simplf.Stmt.Function;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
     public Environment globals = new Environment();
-    public Environment environment = globals;  // Make this public for dynamic scoping
+    public Environment environment = globals;  // public for call-time env management
 
     Interpreter() {
         // ... (existing constructor logic)
@@ -27,12 +27,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
     // --- Core Execution Helpers ---
 
-    // Make evaluate method public for SimplfFunction to use
+    // public so SimplfFunction can evaluate final expression
     public Object evaluate(Expr expr) {
         return expr.accept(this);
     }
 
-    // Make execute method public for SimplfFunction to use  
+    // public so SimplfFunction can exec statements
     public Object execute(Stmt stmt) {
         return stmt.accept(this);
     }
@@ -129,10 +129,23 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
     @Override
     public Object visitFunctionStmt(Stmt.Function stmt) {
-        // Create a function object (closure), capturing the current lexical environment.
-        SimplfFunction function = new SimplfFunction(stmt, environment);
-        
-        // Define the function name in the current environment.
+        // Capture the correct closure: if currently inside a HybridEnv (function call),
+        // capture its primary lexical frame so nested functions close over locals (e.g., 'c').
+        Environment closureEnv = this.environment;
+        try {
+            if (closureEnv.getClass().getName().equals("simplf.SimplfFunction$HybridEnv")) {
+                java.lang.reflect.Field f = closureEnv.getClass().getDeclaredField("primary");
+                f.setAccessible(true);
+                Object primary = f.get(closureEnv);
+                if (primary instanceof Environment) {
+                    closureEnv = (Environment) primary;
+                }
+            }
+        } catch (Exception ignored) {
+            // If reflection fails, fall back to current environment
+        }
+
+        SimplfFunction function = new SimplfFunction(stmt, closureEnv);
         environment.define(stmt.name, stmt.name.lexeme, function);
         return null;
     }
