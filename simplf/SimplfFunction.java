@@ -26,25 +26,43 @@ class SimplfFunction implements SimplfCallable {
 
     @Override
     public Object call(Interpreter interpreter, List<Object> args) {
-        // 1. Create a new call environment, linked to the function's closure.
-        Environment functionEnv = new Environment(closure);
+        // For SimPL-F: Use dynamic scoping - create new environment from current interpreter environment
+        // instead of lexical closure
+        Environment functionEnv = new Environment(interpreter.environment);
 
-        // 2. Bind arguments to parameters.
+        // Bind arguments to parameters.
         for (int i = 0; i < arity(); i++) {
             Token param = declaration.params.get(i);
             functionEnv.define(param, param.lexeme, args.get(i));
         }
 
-        // 3. Execute the function body.
+        // Execute the function body and capture the last expression's value
+        Object lastValue = null;
         try {
-            interpreter.executeBlock(declaration.body, functionEnv);
+            Environment previous = interpreter.environment;
+            interpreter.environment = functionEnv;
+            
+            for (int i = 0; i < declaration.body.size(); i++) {
+                Stmt stmt = declaration.body.get(i);
+                
+                // If this is the last statement and it's an expression statement,
+                // capture its value as the return value
+                if (i == declaration.body.size() - 1 && stmt instanceof Stmt.Expression) {
+                    Stmt.Expression exprStmt = (Stmt.Expression) stmt;
+                    lastValue = interpreter.evaluate(exprStmt.expr);
+                } else {
+                    interpreter.execute(stmt);
+                }
+            }
+            
+            interpreter.environment = previous;
         } catch (ReturnControlFlow returnValue) {
             // Catches the value thrown by a return statement.
             return returnValue.value;
         }
         
-        // Functions reaching the end implicitly return nil (null).
-        return null;
+        // Return the last expression's value, or null if no expression
+        return lastValue;
     }
 
     @Override
