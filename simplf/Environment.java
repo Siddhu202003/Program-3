@@ -1,6 +1,5 @@
 package simplf; 
 
-import simplf.parser.Token;
 import java.util.HashMap;
 import java.util.Map;
 
