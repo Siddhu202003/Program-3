@@ -2,7 +2,6 @@ package simplf;
  
 import java.util.List;
 import simplf.Stmt.Function;
-import simplf.parser.Token;
 
 /**
  * Represents a user-defined function object (closure).
