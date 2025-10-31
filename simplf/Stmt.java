@@ -22,8 +22,6 @@ public abstract class Stmt {
 
         T visitFunctionStmt(Function stmt);
 
-        T visitReturnStmt(Return stmt);
-
     }
 
     public static class Expression extends Stmt {
@@ -138,21 +136,6 @@ public abstract class Stmt {
 
         <T> T accept(Visitor<T> vis) {
             return vis.visitFunctionStmt(this);
-        }
-    }
-
-    public static class Return extends Stmt {
-        final Token keyword;
-        final Expr value;
-
-        public Return(Token keyword, Expr value) {
-            this.keyword = keyword;
-            this.value = value;
-        }
-
-        @Override
-        <T> T accept(Visitor<T> vis) {
-            return vis.visitReturnStmt(this);
         }
     }
 
