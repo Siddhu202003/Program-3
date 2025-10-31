@@ -10,6 +10,7 @@ import simplf.Expr.Conditional;
 import simplf.Expr.Grouping;
 import simplf.Expr.Lambda;
 import simplf.Expr.Literal;
+import simplf.Expr.Logical;
 import simplf.Expr.Unary;
 import simplf.Expr.Variable;
 import simplf.Stmt.Block;
@@ -18,6 +19,7 @@ import simplf.Stmt.For;
 import simplf.Stmt.Function;
 import simplf.Stmt.If;
 import simplf.Stmt.Print;
+import simplf.Stmt.Return;
 import simplf.Stmt.Var;
 import simplf.Stmt.While;
 
@@ -132,6 +134,12 @@ public class Desugar implements Expr.Visitor<Expr>, Stmt.Visitor<Stmt> {
         }
 
         return new Function(stmt.name, stmt.params, new_body);
+    }
+
+    @Override
+    public Stmt visitReturnStmt(Return stmt) {
+        return new Return(stmt.keyword, 
+                         stmt.value != null ? stmt.value.accept(this) : null);
     }
     
     // --- Expression visitors (no change in logic) ---
