@@ -1,0 +1,4 @@
+
+var add = lambda x: lambda y: x+y;
+var z = add(3)(5);
+print z;
