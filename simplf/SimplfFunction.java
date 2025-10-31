@@ -38,8 +38,9 @@ class SimplfFunction implements SimplfCallable {
 
         // Execute the function body and capture the last expression's value
         Object lastValue = null;
+        
+        Environment previous = interpreter.environment;
         try {
-            Environment previous = interpreter.environment;
             interpreter.environment = functionEnv;
             
             for (int i = 0; i < declaration.body.size(); i++) {
@@ -54,11 +55,12 @@ class SimplfFunction implements SimplfCallable {
                     interpreter.execute(stmt);
                 }
             }
-            
-            interpreter.environment = previous;
         } catch (ReturnControlFlow returnValue) {
             // Catches the value thrown by a return statement.
             return returnValue.value;
+        } finally {
+            // Always restore the environment
+            interpreter.environment = previous;
         }
         
         // Return the last expression's value, or null if no expression
