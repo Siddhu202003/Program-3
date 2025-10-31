@@ -59,9 +59,6 @@ class SimplfFunction implements SimplfCallable {
             // Return the last expression's value, or null if no expression
             return lastValue;
             
-        } catch (ReturnControlFlow returnValue) {
-            // Catches the value thrown by a return statement.
-            return returnValue.value;
         } finally {
             // Always restore the environment
             interpreter.environment = previous;
@@ -71,19 +68,5 @@ class SimplfFunction implements SimplfCallable {
     @Override
     public String toString() {
         return "<fn " + declaration.name.lexeme + ">";
-    }
-}
-
-/**
- * Custom exception used to unwind the stack for function return values. 
- * Place this directly in simplf/SimplfFunction.java to avoid creating a new file.
- */
-class ReturnControlFlow extends RuntimeException {
-    final Object value;
-    
-    ReturnControlFlow(Object value) {
-        // Suppress stack trace for clean control flow.
-        super(null, null, false, false);
-        this.value = value;
     }
 }
