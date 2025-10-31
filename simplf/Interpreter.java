@@ -9,7 +9,7 @@ import simplf.Stmt.Function;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
     public Environment globals = new Environment();
-    private Environment environment = globals;
+    public Environment environment = globals;  // Make this public for dynamic scoping
 
     Interpreter() {
         // ... (existing constructor logic)
@@ -27,11 +27,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Object> {
 
     // --- Core Execution Helpers ---
 
-    private Object evaluate(Expr expr) {
+    // Make evaluate method public for SimplfFunction to use
+    public Object evaluate(Expr expr) {
         return expr.accept(this);
     }
 
-    private Object execute(Stmt stmt) {
+    // Make execute method public for SimplfFunction to use  
+    public Object execute(Stmt stmt) {
         return stmt.accept(this);
     }
     
