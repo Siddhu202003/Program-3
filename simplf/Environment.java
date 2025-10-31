@@ -1,5 +1,5 @@
 package simplf; 
-
+ 
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,8 +8,8 @@ import java.util.Map;
  */
 class Environment {
     
-    private final Map<String, Object> values = new HashMap<>();
-    private final Environment enclosing;
+    final Map<String, Object> values = new HashMap<>();
+    final Environment enclosing;
     
     /**
      * Creates the global environment (no enclosing scope).
@@ -66,5 +66,57 @@ class Environment {
         }
 
         throw new RuntimeError(name, "Assignment to undefined variable '" + varName + "'.");
+    }
+
+    // -------- Added helpers for hybrid lexical+dynamic resolution --------
+
+    private Object getFromChain(Token name) {
+        String varName = name.lexeme;
+        for (Environment env = this; env != null; env = env.enclosing) {
+            if (env.values.containsKey(varName)) return env.values.get(varName);
+        }
+        throw new RuntimeError(name, "Undefined variable '" + varName + "'.");
+    }
+
+    private static Object getFromChain(Token name, Environment start) {
+        String varName = name.lexeme;
+        for (Environment env = start; env != null; env = env.enclosing) {
+            if (env.values.containsKey(varName)) return env.values.get(varName);
+        }
+        return null; // not found
+    }
+
+    private boolean assignInChain(Token name, Object value) {
+        String varName = name.lexeme;
+        for (Environment env = this; env != null; env = env.enclosing) {
+            if (env.values.containsKey(varName)) { env.values.put(varName, value); return true; }
+        }
+        return false;
+    }
+
+    private static boolean assignInChain(Token name, Object value, Environment start) {
+        String varName = name.lexeme;
+        for (Environment env = start; env != null; env = env.enclosing) {
+            if (env.values.containsKey(varName)) { env.values.put(varName, value); return true; }
+        }
+        return false;
+    }
+
+    Object getOrFallback(Token name, Environment fallbackRoot) {
+        try {
+            return getFromChain(name);
+        } catch (RuntimeError e) {
+            if (fallbackRoot != null) {
+                Object v = getFromChain(name, fallbackRoot);
+                if (v != null) return v;
+            }
+            throw e;
+        }
+    }
+
+    void assignOrFallback(Token name, Object value, Environment fallbackRoot) {
+        if (assignInChain(name, value)) return;
+        if (fallbackRoot != null && assignInChain(name, value, fallbackRoot)) return;
+        throw new RuntimeError(name, "Assignment to undefined variable '" + name.lexeme + "'.");
     }
 }
